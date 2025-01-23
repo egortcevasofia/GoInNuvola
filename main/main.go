@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 	"io"
 	"log"
 	"net/http"
@@ -28,7 +29,14 @@ var logger TransactionLogger
 
 func initializeTransactionLog() error {
 	var err error
-	logger, err = NewFileTransactionalLogger("transactional.log")
+	config := PostgresDBParams{
+		dbName:   "postgres",
+		host:     "localhost",
+		port:     5432,
+		user:     "postgres",
+		password: "admin",
+	}
+	logger, err = NewPostgresTransactionalLogger(config)
 	if err != nil {
 		return fmt.Errorf("faild to create event logger %w", err)
 	}
