@@ -33,8 +33,15 @@ func (l *PostgresTransactionLogger) Err() <-chan error {
 }
 
 func NewPostgresTransactionalLogger(config PostgresDBParams) (TransactionLogger, error) {
-	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		config.host, config.port, config.user, config.password, config.dbName)
+	//connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	//	config.host, config.port, config.user, config.password, config.dbName)
+
+	connStr := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable",
+		config.user,
+		config.password,
+		config.host,
+		config.port,
+		config.dbName)
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
