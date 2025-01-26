@@ -1,10 +1,10 @@
 ###
-PUT http://localhost:8080/v1/key/one
+PUT http://46.173.214.38:8080/v1/key/one
 
 oneOne
 
 ###
-GET http://localhost:8080/v1/key/one
+GET http://46.173.214.38:8080/v1/key/one
 
 ###
 DELETE http://localhost:8080/v1/key/one
