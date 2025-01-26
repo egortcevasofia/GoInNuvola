@@ -31,7 +31,7 @@ func initializeTransactionLog() error {
 	var err error
 	config := PostgresDBParams{
 		dbName:   "postgres",
-		host:     "host.docker.internal",
+		host:     "localhost",
 		port:     5432,
 		user:     "postgres",
 		password: "admin",
