@@ -1,53 +1,32 @@
-package main
+package transact
 
 import (
+	"GoInNuvola/core"
 	"bufio"
 	"fmt"
 	"os"
 )
 
-type Event struct {
-	Sequence  uint64
-	EventType EventType
-	Key       string
-	Value     string
-}
-type EventType byte
-
-const (
-	_                     = iota
-	EventDelete EventType = iota
-	EventPut              = iota
-)
-
-type TransactionLogger interface {
-	WriteDelete(key string)
-	WritePut(key, value string)
-	Err() <-chan error
-	ReadEvents() (<-chan Event, <-chan error)
-	Run()
-}
-
 type FileTransactionalLogger struct {
-	events       chan<- Event
+	events       chan<- core.Event
 	errors       <-chan error
 	lastSequence uint64
 	file         *os.File
 }
 
 func (l *FileTransactionalLogger) WritePut(key, value string) {
-	l.events <- Event{EventType: EventPut, Key: key, Value: value}
+	l.events <- core.Event{EventType: core.EventPut, Key: key, Value: value}
 }
 
 func (l *FileTransactionalLogger) WriteDelete(key string) {
-	l.events <- Event{EventType: EventDelete, Key: key}
+	l.events <- core.Event{EventType: core.EventDelete, Key: key}
 }
 
 func (l *FileTransactionalLogger) Err() <-chan error {
 	return l.errors
 }
 
-func NewFileTransactionalLogger(fileName string) (TransactionLogger, error) {
+func NewFileTransactionalLogger(fileName string) (core.TransactionLogger, error) {
 	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0755)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open transactional log file: %w", err)
@@ -56,7 +35,7 @@ func NewFileTransactionalLogger(fileName string) (TransactionLogger, error) {
 }
 
 func (l *FileTransactionalLogger) Run() {
-	events := make(chan Event, 16)
+	events := make(chan core.Event, 16)
 	l.events = events
 
 	errors := make(chan error, 1)
@@ -73,13 +52,13 @@ func (l *FileTransactionalLogger) Run() {
 	}()
 }
 
-func (l *FileTransactionalLogger) ReadEvents() (<-chan Event, <-chan error) {
+func (l *FileTransactionalLogger) ReadEvents() (<-chan core.Event, <-chan error) {
 	scanner := bufio.NewScanner(l.file)
-	outEvent := make(chan Event)
+	outEvent := make(chan core.Event)
 	outError := make(chan error, 1)
 
 	go func() {
-		var e Event
+		var e core.Event
 		defer close(outEvent)
 		defer close(outError)
 
